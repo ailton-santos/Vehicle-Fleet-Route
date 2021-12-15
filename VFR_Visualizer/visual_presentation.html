@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html> 
+<head> <title> FMS</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" /> 
+  <title>Google Maps Multiple Markers</title> 
+      <script src="https://maps.googleapis.com/maps/api/js"></script>
+    <!--<script src="data.json"></script>-->
+    <script type="text/javascript" src="markerplus.js"></script>
+    <script type="text/javascript" src="markercluster.js"></script>
+
+    <script>
+
+      function initialize() {
+      
+        center = new google.maps.LatLng(12.967323, 77.595507);
+        
+        xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", "http://104.199.153.214/api1/api/runalgo", false);
+        xmlHttp.send();
+        locations = eval(xmlHttp.responseText);
+
+        
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 11,
+          center: center,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+        
+      //   google.maps.event.addListener(map, 'click', function( event ){
+ 		   //     console.log( "Latitude: "+event.latLng.lat()+" "+", longitude: "+event.latLng.lng() ); 
+		    // });
+
+        markers = [];
+        c=0
+        for (var i = 0; i < locations.length; i++) {
+            latLng = new google.maps.LatLng(locations[i][1],locations[i][2]);
+            marker = new google.maps.Marker({
+	     	    map: map,
+          	position: latLng,
+            title: locations[i][0]
+          });
+          markers.push(marker);
+	     }
+        mcOptions = {gridSize: 75, maxZoom: 15};
+        // alert(c);
+      }
+
+      function cluster()
+      {
+      	markerCluster = new MarkerClusterer(map, markers, mcOptions)
+      	google.maps.event.addDomListener(window, 'load', initialize);
+        //alert(markerCluster.getTotalClusters());
+
+      }
+
+      function getcluster()
+      {
+        l=[]
+        cluster = markerCluster.getClusters();
+        for (j=0;j<cluster.length;j++)
+        {
+          m=cluster[j].getMarkers();
+          for(var k=0;k<m.length;k++)
+          {
+            if(m.length>40)
+            {
+              l1=[m[k].title,m[k].position.lat(),m[k].position.lng(),'pes_b1'];
+              l.push(l1);
+            }
+            else if(m.length>30)
+            {
+              l2=[m[k].title,m[k].position.lat(),m[k].position.lng(),'pes_b2'];
+              l.push(l2);
+            }
+            else if(m.length>10)
+            {
+              l3=[m[k].title,m[k].position.lat(),m[k].position.lng(),'pes_b3'];
+              l.push(l3);
+            }
+            else if(m.length>5)
+            {
+              l4=[m[k].title,m[k].position.lat(),m[k].position.lng(),'pes_b4'];
+              l.push(l4)
+            }
+            else if(m.length>2)
+            {
+              l5=[m[k].title,m[k].position.lat(),m[k].position.lng(),'pes_b4'];
+              l.push(l5)
+            }
+            else
+            {
+              l6=[m[k].title,m[k].position.lat(),m[k].position.lng(),'9999'];
+              l.push(l6)
+            }
+          }
+        }
+        alert(l.length);
+        params = 'data='+JSON.stringify(l)
+        console.log(params)
+        http = new XMLHttpRequest();
+        http.open( "POST", "http://104.199.153.214/api1/api/allocated", true);
+        http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        
+        http.onreadystatechange = function() {//Call a function when the state changes.
+          if(http.readyState == 4 && http.status == 200) {
+          alert(http.responseText);
+        }
+        }
+        http.send(params);
+        alert(http.responseText)
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+
+
+    </script>
+
+</head> 
+<body>
+ <h1 > <b><u>*********************  Vehiculer Fleet Management System*********************</u></b></h1>
+  <div id="map" style="width: 1300px; height: 550px;"></div>
+  <br/>
+  <input type="button" style="width:400px;left:900px;" value="Next" id="next" onclick="cluster()"/>
+  <input type="button" style="width:400px;left:900px;" value="Get id="next" onclick="getcluster()"/>
+</body>
+</html>
